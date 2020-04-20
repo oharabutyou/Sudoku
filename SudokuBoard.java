@@ -29,9 +29,10 @@ class Pair {
 }
 
 public class SudokuBoard {
-    static int msize = 3;
+    static int msize = 4;
     static int psize = msize * msize;
     SudokuPanel[] panels = new SudokuPanel[psize * psize];
+    SudokuPanel[] sudoku_board = new SudokuPanel[psize * psize];
     LinkedList<Integer> list = new LinkedList<>();
     LinkedList<Pair> pairList = new LinkedList<>();
     final int ROW = 0;
@@ -43,7 +44,7 @@ public class SudokuBoard {
         load(filename);
     }
 
-    public int getRCM(){
+    public int getRCM() {
         return RCM;
     }
 
@@ -54,15 +55,15 @@ public class SudokuBoard {
     int getLine(int no, int rcm) {
         int line = -1;
         switch (rcm) {
-        case ROW:
-            line = no % psize;
-            break;
-        case COL:
-            line = no / psize;
-            break;
-        case MASS:
-            line = (getLine(no, COL) / msize * msize) + (getLine(no, ROW) / msize);
-            break;
+            case ROW:
+                line = no % psize;
+                break;
+            case COL:
+                line = no / psize;
+                break;
+            case MASS:
+                line = (getLine(no, COL) / msize * msize) + (getLine(no, ROW) / msize);
+                break;
         }
         return line;
     }
@@ -70,24 +71,24 @@ public class SudokuBoard {
     int[] getGroup(int line, int rcm) {
         int[] member = new int[psize];
         switch (rcm) {
-        case ROW:
-            for (int group = 0; group < psize; group++) {
-                member[group] = group * psize + line;
-            }
-            break;
-        case COL:
-            for (int group = 0; group < psize; group++) {
-                member[group] = line * psize + group;
-            }
-            break;
-        case MASS:
-            int leftUp = line / msize * (psize * msize) + line % msize * msize;
-            for (int gpcol = 0; gpcol < msize; gpcol++) {
-                for (int gprow = 0; gprow < msize; gprow++) {
-                    member[gpcol * msize + gprow] = leftUp + gpcol * psize + gprow;
+            case ROW:
+                for (int group = 0; group < psize; group++) {
+                    member[group] = group * psize + line;
                 }
-            }
-            break;
+                break;
+            case COL:
+                for (int group = 0; group < psize; group++) {
+                    member[group] = line * psize + group;
+                }
+                break;
+            case MASS:
+                int leftUp = line / msize * (psize * msize) + line % msize * msize;
+                for (int gpcol = 0; gpcol < msize; gpcol++) {
+                    for (int gprow = 0; gprow < msize; gprow++) {
+                        member[gpcol * msize + gprow] = leftUp + gpcol * psize + gprow;
+                    }
+                }
+                break;
         }
         return member;
     }
@@ -114,14 +115,18 @@ public class SudokuBoard {
 
     String display() {
         String disp = "";
+        int count = 0;
         for (int col = 0; col < psize; col++) {
             for (int row = 0; row < psize; row++) {
                 disp += panels[col * psize + row].getAns();
+                if(0==panels[col * psize + row].getAns())
+                    count++;
                 if (row != psize - 1)
                     disp += ",";
             }
             disp += "\n";
         }
+        disp+="count:"+count+"\n";
         return disp;
     }
 
@@ -267,21 +272,21 @@ public class SudokuBoard {
     void convert(int no, int ino, int rcm) {
         setUsed(no, ino, rcm);
         switch (rcm) {
-        case ROW:
-        case COL:
-            if (getLine(no, MASS) == getLine(ino, MASS))
-                setUsed(no, ino, MASS);
-            break;
-        case MASS:
-            if (getLine(no, ROW) == getLine(ino, ROW))
-                setUsed(no, ino, ROW);
-            else if (getLine(no, COL) == getLine(ino, COL))
-                setUsed(no, ino, COL);
-            break;
+            case ROW:
+            case COL:
+                if (getLine(no, MASS) == getLine(ino, MASS))
+                    setUsed(no, ino, MASS);
+                break;
+            case MASS:
+                if (getLine(no, ROW) == getLine(ino, ROW))
+                    setUsed(no, ino, ROW);
+                else if (getLine(no, COL) == getLine(ino, COL))
+                    setUsed(no, ino, COL);
+                break;
         }
     }
 
-    void solve() {
+    boolean solve() {
         while (!list.isEmpty()) {
             do {
                 while (!list.isEmpty()) {
@@ -290,6 +295,41 @@ public class SudokuBoard {
                 }
             } while (checkOnly() || pairFinder());
         }
+        return finished();
+    }
+
+    void solveByBacktrack() {
+        addNum(panels, 0);
+    }
+
+    boolean addNum(SudokuPanel[] board, int index) {
+        if (index >= psize * psize) {
+            panels = board;
+            return true;
+        }
+        if (board[index].getAns() != 0)
+            return addNum(board, index + 1);
+        SudokuPanel[] cpy = new SudokuPanel[board.length];
+        for(int i=0;i<cpy.length;i++){
+            cpy[i] = board[i].clone();
+        }
+        for (int num = 1; num <= psize; num++) {
+            cpy[index].setAns(num);
+            if (!cpy[index].ifUsed(num) && checkBoard(cpy, index) && addNum(cpy, index + 1))
+                return true;
+        }
+        return false;
+    }
+
+    boolean checkBoard(SudokuPanel[] board, int index) {
+        for (int rcm = 0; rcm < RCM; rcm++) {
+            int[] member = getGroup(getLine(index, rcm), rcm);
+            for (int i = 0; i < member.length; i++) {
+                if (index != member[i] && board[member[i]].getAns() == board[index].getAns())
+                    return false;
+            }
+        }
+        return true;
     }
 
 }

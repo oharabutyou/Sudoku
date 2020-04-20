@@ -12,8 +12,24 @@ public class SudokuPanel {
 		setAns(ans);
 	}
 
+	SudokuPanel(int ans,int psize,int count,boolean[] used){
+		this.ans=ans;
+		this.psize=psize;
+		this.count=count;
+		this.used=used;
+	}
+
+	@Override
+	protected SudokuPanel clone() {
+		return new SudokuPanel(ans, psize, count, used.clone());
+	}
+
 	boolean getUsed(int n) {
 		return used[n] || used[0];
+	}
+
+	boolean ifUsed(int n){
+		return used[n];
 	}
 
 	boolean[] getUsed(){
