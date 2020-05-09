@@ -119,14 +119,14 @@ public class SudokuBoard {
         for (int col = 0; col < psize; col++) {
             for (int row = 0; row < psize; row++) {
                 disp += panels[col * psize + row].getAns();
-                if(0==panels[col * psize + row].getAns())
+                if (0 == panels[col * psize + row].getAns())
                     count++;
                 if (row != psize - 1)
                     disp += ",";
             }
             disp += "\n";
         }
-        disp+="count:"+count+"\n";
+        disp += "count:" + count + "\n";
         return disp;
     }
 
@@ -299,33 +299,29 @@ public class SudokuBoard {
     }
 
     void solveByBacktrack() {
-        addNum(panels, 0);
+        addNum(0);
     }
 
-    boolean addNum(SudokuPanel[] board, int index) {
-        if (index >= psize * psize) {
-            panels = board;
+    boolean addNum(int index) {
+        if (index >= psize * psize) 
             return true;
-        }
-        if (board[index].getAns() != 0)
-            return addNum(board, index + 1);
-        SudokuPanel[] cpy = new SudokuPanel[board.length];
-        for(int i=0;i<cpy.length;i++){
-            cpy[i] = board[i].clone();
-        }
+        if (panels[index].getAns() != 0)
+            return addNum(index + 1);
         for (int num = 1; num <= psize; num++) {
-            cpy[index].setAns(num);
-            if (!cpy[index].ifUsed(num) && checkBoard(cpy, index) && addNum(cpy, index + 1))
+            panels[index].setAns(num);
+            // if (!panels[index].ifUsed(num) && checkBoard(panels, index) && addNum(panels, index + 1))
+            if (checkBoard(index) && addNum(index + 1))
                 return true;
         }
+        panels[index].setAns(0);
         return false;
     }
 
-    boolean checkBoard(SudokuPanel[] board, int index) {
+    boolean checkBoard(int index) {
         for (int rcm = 0; rcm < RCM; rcm++) {
             int[] member = getGroup(getLine(index, rcm), rcm);
             for (int i = 0; i < member.length; i++) {
-                if (index != member[i] && board[member[i]].getAns() == board[index].getAns())
+                if (index != member[i] && panels[member[i]].getAns() == panels[index].getAns())
                     return false;
             }
         }

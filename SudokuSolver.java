@@ -12,11 +12,11 @@ public class SudokuSolver {
 		SudokuBoard b = new SudokuBoard(filename);
 		System.out.println("Imported number:");
 		System.out.println(b.display());
-		System.out.println("Please wait...\n");
-		b.solve();
-		System.out.println("After solving:");
-		System.out.println(b.display());
-		if(b.finished())System.out.println("This is the answer!");
+		// System.out.println("Please wait...\n");
+		// b.solve();
+		// System.out.println("After solving:");
+		// System.out.println(b.display());
+		// if(b.finished())System.out.println("This is the answer!");
 
 		System.out.println("Please wait...\n");
 		b.solveByBacktrack();
