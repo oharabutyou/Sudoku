@@ -1,12 +1,13 @@
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
 public class SudokuBoardBTmix {
-    static int msize = 4;
-    static int psize = msize * msize;
-    SudokuPanel[] sudoku_board = new SudokuPanel[psize * psize];
+    static int msize;
+    static int psize;
+    SudokuPanel[] sudoku_board;
     LinkedList<Integer> list = new LinkedList<>();
     final int ROW = 0;
     final int COL = 1;
@@ -14,7 +15,7 @@ public class SudokuBoardBTmix {
     final int RCM = 3;
 
     SudokuBoardBTmix(String filename) {
-        load(filename, sudoku_board);
+        load(filename);
     }
 
     public int getRCM() {
@@ -66,16 +67,20 @@ public class SudokuBoardBTmix {
         return member;
     }
 
-    void load(String filename, SudokuPanel[] panels) {
+    void load(String filename) {
         // Load from file
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+            LinkedList<String> strings = new LinkedList<>(reader.lines().collect(Collectors.toList()));
+            msize =(int) Math.round(Math.sqrt(strings.size()));
+            psize = msize*msize;
+            sudoku_board = new SudokuPanel[psize*psize];
             for (int col = 0; col < psize; col++) {
-                String s = reader.readLine();
+                String s = strings.get(col);
                 String[] sp = s.split(",");
                 for (int row = 0; row < psize; row++) {
                     int ans = Integer.parseInt(sp[row]);
-                    panels[col * psize + row] = new SudokuPanel(ans);
+                    sudoku_board[col * psize + row] = new SudokuPanel(ans);
                     if (ans != 0)
                         list.add(col * psize + row);
                 }
