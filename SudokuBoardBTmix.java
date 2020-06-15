@@ -5,63 +5,51 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
 public class SudokuBoardBTmix {
-    static int msize;
-    static int psize;
+    enum RCM {
+        ROW, COL, MASS
+    }
+
+    private int msize;
+    private int psize;
     SudokuPanel[] sudoku_board;
     LinkedList<Integer> list = new LinkedList<>();
-    final int ROW = 0;
-    final int COL = 1;
-    final int MASS = 2;
-    final int RCM = 3;
 
     SudokuBoardBTmix(String filename) {
         load(filename);
-    }
-
-    public int getRCM() {
-        return RCM;
     }
 
     public int getPsize() {
         return psize;
     }
 
-    int getLine(int no, int rcm) {
-        int line = -1;
+    int getLine(int no, RCM rcm) {
         switch (rcm) {
             case ROW:
-                line = no % psize;
-                break;
+                return no % psize;
             case COL:
-                line = no / psize;
-                break;
+                return no / psize;
             case MASS:
-                line = (getLine(no, COL) / msize * msize) + (getLine(no, ROW) / msize);
-                break;
+                return (getLine(no, RCM.COL) / msize * msize) + (getLine(no, RCM.ROW) / msize);
         }
-        return line;
+        return -1;
     }
 
-    int[] getGroup(int line, int rcm) {
+    int[] getGroup(int line, RCM rcm) {
         int[] member = new int[psize];
         switch (rcm) {
             case ROW:
-                for (int group = 0; group < psize; group++) {
+                for (int group = 0; group < psize; group++)
                     member[group] = group * psize + line;
-                }
                 break;
             case COL:
-                for (int group = 0; group < psize; group++) {
+                for (int group = 0; group < psize; group++)
                     member[group] = line * psize + group;
-                }
                 break;
             case MASS:
                 int leftUp = line / msize * (psize * msize) + line % msize * msize;
-                for (int gpcol = 0; gpcol < msize; gpcol++) {
-                    for (int gprow = 0; gprow < msize; gprow++) {
+                for (int gpcol = 0; gpcol < msize; gpcol++)
+                    for (int gprow = 0; gprow < msize; gprow++)
                         member[gpcol * msize + gprow] = leftUp + gpcol * psize + gprow;
-                    }
-                }
                 break;
         }
         return member;
@@ -72,9 +60,9 @@ public class SudokuBoardBTmix {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
             LinkedList<String> strings = new LinkedList<>(reader.lines().collect(Collectors.toList()));
-            msize =(int) Math.round(Math.sqrt(strings.size()));
-            psize = msize*msize;
-            sudoku_board = new SudokuPanel[psize*psize];
+            msize = (int) Math.round(Math.sqrt(strings.size()));
+            psize = msize * msize;
+            sudoku_board = new SudokuPanel[psize * psize];
             for (int col = 0; col < psize; col++) {
                 String s = strings.get(col);
                 String[] sp = s.split(",");
@@ -114,7 +102,7 @@ public class SudokuBoardBTmix {
 
     boolean finished(SudokuPanel[] panels) {
         for (int scan = 0; scan < psize; scan++) {
-            for (int rcm = 0; rcm < RCM; rcm++) {
+            for (RCM rcm : RCM.values()) {
                 int[] checker = getGroup(scan, rcm);
                 for (int num = 1; num <= psize; num++) {
                     for (int group = 0; group < psize; group++) {
@@ -139,7 +127,7 @@ public class SudokuBoardBTmix {
 
     void setUsed(int no, SudokuPanel[] panels) {
         int num = panels[no].getAns();
-        for (int rcm = 0; rcm < RCM; rcm++) {
+        for (RCM rcm : RCM.values()) {
             // row,col,mass Check by this order
             int[] checker = getGroup(getLine(no, rcm), rcm);
             for (int group = 0; group < psize; group++) {
@@ -157,7 +145,7 @@ public class SudokuBoardBTmix {
     boolean checkOnly(SudokuPanel[] panels) {
         // Scanning number which can use only one panel at the group
         for (int scan = 0; scan < psize; scan++) {
-            for (int rcm = 0; rcm < RCM; rcm++) {
+            for (RCM rcm : RCM.values()) {
                 int[] checker = getGroup(scan, rcm);
                 for (int num = 1; num <= psize; num++) {
                     int find = -1;
@@ -184,7 +172,7 @@ public class SudokuBoardBTmix {
         return false;
     }
 
-    void setUsed(int no, int ino, int rcm, SudokuPanel[] panels) {
+    void setUsed(int no, int ino, RCM rcm, SudokuPanel[] panels) {
         // SetUsed pair number after finding
         int[] checker = getGroup(getLine(no, rcm), rcm);
         boolean[] used = panels[no].getUsed();
@@ -252,7 +240,7 @@ public class SudokuBoardBTmix {
     }
 
     boolean checkBoard(SudokuPanel[] board, int index) {
-        for (int rcm = 0; rcm < RCM; rcm++) {
+        for (RCM rcm : RCM.values()) {
             int[] member = getGroup(getLine(index, rcm), rcm);
             for (int i = 0; i < member.length; i++) {
                 if (index != member[i] && board[member[i]].getAns() == board[index].getAns())
