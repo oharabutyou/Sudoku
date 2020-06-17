@@ -3,9 +3,12 @@ package Sudoku;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
+
+import Sudoku.SudokuBoard.RCM;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,6 +20,13 @@ public class SudokuGUI {
     SudokuBoard board;
     static final int gridSize = 50;
     static final int margin = 5;
+    static final int board_tk = 7;
+    static final int mass_tk = 5;
+    static final int panel_tk = 3;
+    int board_bounds;
+    int mass_bounds;
+
+    JPanel[] num_panels;
 
     public static void main(String[] args) {
         (new SudokuGUI()).makeGUI();
@@ -31,8 +41,12 @@ public class SudokuGUI {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frame.setVisible(false);
                 board = new SudokuBoard(file_field.getText());
+                if (board.sudoku_board == null) {
+                    JOptionPane.showMessageDialog(frame, "Could not open:" + file_field.getText());
+                    return;
+                }
+                frame.setVisible(false);
                 showBoard();
             }
         });
@@ -45,32 +59,40 @@ public class SudokuGUI {
     }
 
     void showBoard() {
-        JFrame frame = setFrame("Sudoku", board.psize * gridSize*3/2, board.psize * gridSize+100);
+        JFrame frame = setFrame("Sudoku", board.psize * gridSize * 3 / 2, board.psize * gridSize + 100);
         JPanel frame_panel = new JPanel(new FlowLayout());
+        num_panels = new JPanel[board.psize * board.psize];
+        mass_bounds = board.msize * gridSize + (board.msize + 1) * (panel_tk);
+        board_bounds = board.msize * mass_bounds + (board.msize + 1) * (mass_tk);
 
-        JPanel board_panel = new JPanel(new FlowLayout(FlowLayout.CENTER,0,0));
-        board_panel.setBorder(new LineBorder(Color.black, 3));
-        board_panel.setPreferredSize(new Dimension(board.psize * (gridSize+1)+6, board.psize * (gridSize+1)+6));
+        JPanel board_panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        board_panel.setPreferredSize(new Dimension(board_bounds, board_bounds));
+        board_panel.setBorder(new LineBorder(Color.blue, board_tk));
+
         for (int line = 0; line < board.psize; line++)
-            setMassPanels(board_panel);
+            setMassPanels(board_panel, line);
 
         frame_panel.add(board_panel);
         frame.add(frame_panel);
         frame.setVisible(true);
     }
 
-    private void setMassPanels(JPanel board_panel) {
-        JPanel mass_panel = new JPanel(new FlowLayout(FlowLayout.CENTER,0,0));
-        mass_panel.setPreferredSize(new Dimension(board.msize * (gridSize+1), board.msize * (gridSize+1)));
+    private void setMassPanels(JPanel board_panel, int line) {
+        JPanel mass_panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        mass_panel.setPreferredSize(new Dimension(mass_bounds, mass_bounds));
+        mass_panel.setBorder(new LineBorder(Color.red, mass_tk));
+
+        int[] group = board.getGroup(line, RCM.MASS);
         for (int index = 0; index < board.psize; index++) {
             JPanel num_panel = new JPanel();
-            JLabel num_label = new JLabel("0");
+            JLabel num_label = new JLabel("" + board.sudoku_board[group[index]].ans);
             num_panel.add(num_label);
             num_panel.setPreferredSize(new Dimension(gridSize, gridSize));
-            num_panel.setBorder(new LineBorder(Color.black, 1));
+            num_panel.setBorder(new LineBorder(Color.black, panel_tk));
+
+            num_panels[group[index]] = num_panel;
             mass_panel.add(num_panel);
         }
-        mass_panel.setBorder(new LineBorder(Color.black, 2));
         board_panel.add(mass_panel);
     }
 
