@@ -1,21 +1,35 @@
+package Sudoku;
+
 import java.util.LinkedList;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
-public class SudokuBoardBTmix {
-    enum RCM {
+public class SudokuBoard {
+    static enum RCM {
         ROW, COL, MASS
     }
 
-    private int msize;
-    private int psize;
+    static Scanner stdIn = new Scanner(System.in);
+
+    int msize;
+    int psize;
     SudokuPanel[] sudoku_board;
     LinkedList<Integer> list = new LinkedList<>();
 
-    SudokuBoardBTmix(String filename) {
+    SudokuBoard(String filename) {
         load(filename);
+    }
+
+    SudokuBoard() {
+        load(getFilename());
+    }
+
+    String getFilename() {
+        System.out.print("Enter Import File:");
+        return stdIn.next();
     }
 
     public int getPsize() {
@@ -68,7 +82,7 @@ public class SudokuBoardBTmix {
                 String[] sp = s.split(",");
                 for (int row = 0; row < psize; row++) {
                     int ans = Integer.parseInt(sp[row]);
-                    sudoku_board[col * psize + row] = new SudokuPanel(ans);
+                    sudoku_board[col * psize + row] = new SudokuPanel(ans, psize);
                     if (ans != 0)
                         list.add(col * psize + row);
                 }

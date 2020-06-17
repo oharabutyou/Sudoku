@@ -1,17 +1,19 @@
+package Sudoku;
+
 import java.util.Scanner;
 
-public class SudokuBTTest {
+public class SudokuCUI {
     static Scanner stdIn = new Scanner(System.in);
 
     public static void main(String[] args) {
         String filename;
-        if (args.length == 0) {
+        if (args.length != 0) {
             System.out.println("Enter import file:");
             filename = stdIn.next();
         } else {
             filename = args[0];
         }
-        SudokuBoardBTmix b = new SudokuBoardBTmix(filename);
+        SudokuBoard b = new SudokuBoard(filename);
         System.out.println("Imported number:");
         System.out.println(b.display());
         // System.out.println("Please wait...\n");
