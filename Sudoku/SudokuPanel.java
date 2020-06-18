@@ -5,10 +5,11 @@ public class SudokuPanel {
 	int psize;
 	int count;
 	// when used[0] is false scannable,the others indicate used number
-	boolean[] used = new boolean[psize + 1];
+	boolean[] used;
 
 	SudokuPanel(int ans,int psize) {
 		this.psize = psize;
+		used = new boolean[psize + 1];
 		count = psize;
 		setAns(ans);
 	}

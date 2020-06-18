@@ -20,9 +20,9 @@ public class SudokuGUI {
     SudokuBoard board;
     static final int gridSize = 50;
     static final int margin = 5;
-    static final int board_tk = 7;
-    static final int mass_tk = 5;
-    static final int panel_tk = 3;
+    static final int board_tk = 3;
+    static final int mass_tk = 2;
+    static final int panel_tk = 1;
     int board_bounds;
     int mass_bounds;
 
@@ -42,6 +42,7 @@ public class SudokuGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 board = new SudokuBoard(file_field.getText());
+                board.solveByBacktrack();
                 if (board.sudoku_board == null) {
                     JOptionPane.showMessageDialog(frame, "Could not open:" + file_field.getText());
                     return;
@@ -62,12 +63,12 @@ public class SudokuGUI {
         JFrame frame = setFrame("Sudoku", board.psize * gridSize * 3 / 2, board.psize * gridSize + 100);
         JPanel frame_panel = new JPanel(new FlowLayout());
         num_panels = new JPanel[board.psize * board.psize];
-        mass_bounds = board.msize * gridSize + (board.msize + 1) * (panel_tk);
-        board_bounds = board.msize * mass_bounds + (board.msize + 1) * (mass_tk);
+        mass_bounds = board.msize * gridSize + mass_tk*2;
+        board_bounds = board.msize * mass_bounds + board_tk*2;
 
         JPanel board_panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         board_panel.setPreferredSize(new Dimension(board_bounds, board_bounds));
-        board_panel.setBorder(new LineBorder(Color.blue, board_tk));
+        board_panel.setBorder(new LineBorder(Color.black, board_tk));
 
         for (int line = 0; line < board.psize; line++)
             setMassPanels(board_panel, line);
@@ -80,7 +81,7 @@ public class SudokuGUI {
     private void setMassPanels(JPanel board_panel, int line) {
         JPanel mass_panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         mass_panel.setPreferredSize(new Dimension(mass_bounds, mass_bounds));
-        mass_panel.setBorder(new LineBorder(Color.red, mass_tk));
+        mass_panel.setBorder(new LineBorder(Color.black, mass_tk));
 
         int[] group = board.getGroup(line, RCM.MASS);
         for (int index = 0; index < board.psize; index++) {
