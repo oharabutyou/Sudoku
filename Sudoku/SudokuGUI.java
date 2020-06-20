@@ -63,8 +63,8 @@ public class SudokuGUI {
         JFrame frame = setFrame("Sudoku", board.psize * gridSize * 3 / 2, board.psize * gridSize + 100);
         JPanel frame_panel = new JPanel(new FlowLayout());
         num_panels = new JPanel[board.psize * board.psize];
-        mass_bounds = board.msize * gridSize + mass_tk*2;
-        board_bounds = board.msize * mass_bounds + board_tk*2;
+        mass_bounds = board.msize * gridSize + mass_tk * 2;
+        board_bounds = board.msize * mass_bounds + board_tk * 2;
 
         JPanel board_panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         board_panel.setPreferredSize(new Dimension(board_bounds, board_bounds));
@@ -83,15 +83,14 @@ public class SudokuGUI {
         mass_panel.setPreferredSize(new Dimension(mass_bounds, mass_bounds));
         mass_panel.setBorder(new LineBorder(Color.black, mass_tk));
 
-        int[] group = board.getGroup(line, RCM.MASS);
-        for (int index = 0; index < board.psize; index++) {
+        for (Integer index : board.getGroup(line, RCM.MASS, true)) {
             JPanel num_panel = new JPanel();
-            JLabel num_label = new JLabel("" + board.sudoku_board[group[index]].ans);
+            JLabel num_label = new JLabel("" + board.sudoku_board[index].ans);
             num_panel.add(num_label);
             num_panel.setPreferredSize(new Dimension(gridSize, gridSize));
             num_panel.setBorder(new LineBorder(Color.black, panel_tk));
 
-            num_panels[group[index]] = num_panel;
+            num_panels[index] = num_panel;
             mass_panel.add(num_panel);
         }
         board_panel.add(mass_panel);
