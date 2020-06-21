@@ -18,6 +18,8 @@ public class SudokuBoard {
     LinkedList<Integer> list = new LinkedList<>();
     LinkedList<Integer> numList;
 
+    static LinkedList<SudokuBoard> solutions = new LinkedList<>();
+
     SudokuBoard(String filename) {
         load(filename);
     }
@@ -122,7 +124,7 @@ public class SudokuBoard {
     }
 
     boolean finished() {
-        return psizeIndex().stream()//
+        return psizeIndex().parallelStream()//
                 .allMatch(line -> Arrays.asList(RCM.values()).stream()//
                         .allMatch(rcm -> numList().stream()//
                                 .allMatch(num -> getGroup(line, rcm, true).stream()//
@@ -172,7 +174,7 @@ public class SudokuBoard {
     private boolean solve() {
         while (!list.isEmpty()) {
             do {
-                while (!list.isEmpty()) 
+                while (!list.isEmpty())
                     setUsed(list.pollFirst());
             } while (checkOnly());
         }
@@ -182,32 +184,34 @@ public class SudokuBoard {
     void solveByBacktrack() {
         solve();
         addNum(new SudokuBoard(this), 0);
+        System.out.println(solutions.size());
     }
 
     private boolean addNum(SudokuBoard board, int index) {
         if (index >= psize * psize) {
-            sudoku_board = board.sudoku_board;
+            if (board.finished()) {
+                solutions.add(board);
+            }
             return finished();
         }
         if (board.sudoku_board[index].getAns() != 0)
             return addNum(board, index + 1);
-        for (Integer num : numList()) {
+        numList().parallelStream().forEach(num -> {
             if (!board.sudoku_board[index].ifUsed(num)) {
                 SudokuBoard cpy = new SudokuBoard(board);
                 cpy.sudoku_board[index].setAns(num);
                 if (cpy.checkBoard(index)) {
                     cpy.list.add(index);
                     cpy.solve();
-                    if (addNum(cpy, index + 1))
-                        return true;
+                    addNum(cpy, index + 1);
                 }
             }
-        }
+        });
         return false;
     }
 
     private boolean checkBoard(int index) {
-        return !Arrays.asList(RCM.values()).stream()//
+        return !Arrays.asList(RCM.values()).parallelStream()//
                 .anyMatch(rcm -> getGroup(getLine(index, rcm), rcm, true).stream()//
                         .anyMatch(member -> index != member //
                                 && sudoku_board[member].getAns() == sudoku_board[index].getAns()));

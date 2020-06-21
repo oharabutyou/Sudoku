@@ -8,7 +8,7 @@ public class SudokuCUI {
 		System.out.println("Please wait...\n");
 		b.solveByBacktrack();
 		System.out.println("After solving:");
-		System.out.println(b.display());
+		System.out.println(SudokuBoard.solutions.getFirst().display());
 		if (b.finished())
 			System.out.println("This is the answer!");
 	}
