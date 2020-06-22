@@ -2,6 +2,7 @@ package Sudoku;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -49,7 +50,7 @@ public class SudokuBoard {
         return -1;
     }
 
-    LinkedList<Integer> getGroup(int line, RCM rcm, boolean bool) {
+    LinkedList<Integer> getGroup(int line, RCM rcm) {
         LinkedList<Integer> member = new LinkedList<>();
         switch (rcm) {
             case ROW:
@@ -127,13 +128,13 @@ public class SudokuBoard {
         return psizeIndex().parallelStream()//
                 .allMatch(line -> Arrays.asList(RCM.values()).stream()//
                         .allMatch(rcm -> numList().stream()//
-                                .allMatch(num -> getGroup(line, rcm, true).stream()//
+                                .allMatch(num -> getGroup(line, rcm).stream()//
                                         .anyMatch(p -> sudoku_board[p].getAns() == num))));
     }
 
     private void setUsed(int index) {
         for (RCM rcm : RCM.values())
-            for (Integer member : getGroup(getLine(index, rcm), rcm, true))
+            for (Integer member : getGroup(getLine(index, rcm), rcm))
                 setUsed(sudoku_board[index].getAns(), member);
     }
 
@@ -143,40 +144,27 @@ public class SudokuBoard {
             list.add(member);
     }
 
-    private boolean checkOnly() {
+    private void checkOnly() {
         // Scanning number which can use only one panel at the group
-        for (int scan = 0; scan < psize; scan++) {
+        for (Integer scan : psizeIndex()) {
             for (RCM rcm : RCM.values()) {
-                for (int num = 1; num <= psize; num++) {
-                    int find = -1;
-                    for (Integer member : getGroup(scan, rcm, true)) {
-                        boolean used = sudoku_board[member].getUsed(num);
-                        if (num == sudoku_board[member].getAns())
-                            break;
-                        else if (find == -1 && !used)
-                            find = member;
-                        else if (find != -1 && !used) {
-                            find = -1;
-                            break;
-                        }
-                    }
-                    if (find != -1) {
-                        sudoku_board[find].setAns(num);
-                        setUsed(find);
-                        return true;
+                for (Integer num : numList()) {
+                    List<Integer> finds = getGroup(scan, rcm).stream()
+                            .filter(member -> sudoku_board[member].getUsed(num)).collect(Collectors.toList());
+                    if (finds.size() == 1) {
+                        sudoku_board[finds.get(0)].setAns(num);
+                        list.add(finds.get(0));
                     }
                 }
             }
         }
-        return false;
     }
 
     private boolean solve() {
         while (!list.isEmpty()) {
-            do {
-                while (!list.isEmpty())
-                    setUsed(list.pollFirst());
-            } while (checkOnly());
+            while (!list.isEmpty())
+                setUsed(list.pollFirst());
+            checkOnly();
         }
         return finished();
     }
@@ -184,6 +172,7 @@ public class SudokuBoard {
     void solveByBacktrack() {
         solve();
         addNum(new SudokuBoard(this), 0);
+        sudoku_board = solutions.getFirst().sudoku_board;
         System.out.println(solutions.size());
     }
 
@@ -212,7 +201,7 @@ public class SudokuBoard {
 
     private boolean checkBoard(int index) {
         return !Arrays.asList(RCM.values()).parallelStream()//
-                .anyMatch(rcm -> getGroup(getLine(index, rcm), rcm, true).stream()//
+                .anyMatch(rcm -> getGroup(getLine(index, rcm), rcm).stream()//
                         .anyMatch(member -> index != member //
                                 && sudoku_board[member].getAns() == sudoku_board[index].getAns()));
     }

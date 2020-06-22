@@ -83,7 +83,7 @@ public class SudokuGUI {
         mass_panel.setPreferredSize(new Dimension(mass_bounds, mass_bounds));
         mass_panel.setBorder(new LineBorder(Color.black, mass_tk));
 
-        for (Integer index : board.getGroup(line, RCM.MASS, true)) {
+        for (Integer index : board.getGroup(line, RCM.MASS)) {
             JPanel num_panel = new JPanel();
             JLabel num_label = new JLabel("" + board.sudoku_board[index].ans);
             num_panel.add(num_label);
