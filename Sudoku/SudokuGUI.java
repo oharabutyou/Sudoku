@@ -42,11 +42,11 @@ public class SudokuGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 board = new SudokuBoard(file_field.getText());
-                board.solveByBacktrack();
-                if (board.panels == null) {
+                if (board.loaded()) {
                     JOptionPane.showMessageDialog(frame, "Could not open:" + file_field.getText());
                     return;
                 }
+                board.solveByBacktrack();
                 frame.setVisible(false);
                 showBoard();
             }
@@ -85,7 +85,7 @@ public class SudokuGUI {
 
         for (Integer index : board.getGroup(line, RCM.MASS)) {
             JPanel num_panel = new JPanel();
-            JLabel num_label = new JLabel("" + board.panels[index].ans);
+            JLabel num_label = new JLabel("" + board.panels.get(index).ans);
             num_panel.add(num_label);
             num_panel.setPreferredSize(new Dimension(gridSize, gridSize));
             num_panel.setBorder(new LineBorder(Color.black, panel_tk));
