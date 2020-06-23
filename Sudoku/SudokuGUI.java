@@ -43,7 +43,7 @@ public class SudokuGUI {
             public void actionPerformed(ActionEvent e) {
                 board = new SudokuBoard(file_field.getText());
                 board.solveByBacktrack();
-                if (board.sudoku_board == null) {
+                if (board.panels == null) {
                     JOptionPane.showMessageDialog(frame, "Could not open:" + file_field.getText());
                     return;
                 }
@@ -85,7 +85,7 @@ public class SudokuGUI {
 
         for (Integer index : board.getGroup(line, RCM.MASS)) {
             JPanel num_panel = new JPanel();
-            JLabel num_label = new JLabel("" + board.sudoku_board[index].ans);
+            JLabel num_label = new JLabel("" + board.panels[index].ans);
             num_panel.add(num_label);
             num_panel.setPreferredSize(new Dimension(gridSize, gridSize));
             num_panel.setBorder(new LineBorder(Color.black, panel_tk));

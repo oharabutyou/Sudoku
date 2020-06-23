@@ -4,14 +4,12 @@ public class SudokuPanel {
 	int ans = 0;
 	int psize;
 	int count;
-	// when used[0] is false scannable,the others indicate used number
 	boolean[] used;
 
-	SudokuPanel(int ans,int psize) {
+	SudokuPanel(int psize) {
 		this.psize = psize;
 		used = new boolean[psize + 1];
 		count = psize;
-		setAns(ans);
 	}
 
 	SudokuPanel(int ans,int psize,int count,boolean[] used){
@@ -27,7 +25,7 @@ public class SudokuPanel {
 	}
 
 	boolean getUsed(int n) {
-		return used[n] || used[0];
+		return used[n] || ans!=0;
 	}
 
 	boolean ifUsed(int n){
@@ -57,11 +55,7 @@ public class SudokuPanel {
 	}
 
 	void setAns(int ans) {
-		// Store ans and disable scan
 		this.ans = ans;
-		if (ans != 0) {
-			used[0] = true;
-		}
 	}
 
 	int getAns() {
