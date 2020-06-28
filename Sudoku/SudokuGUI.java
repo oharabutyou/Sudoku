@@ -2,55 +2,38 @@ package Sudoku;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.LineBorder;
 
+import Sudoku.SizedPanel.SIZE;
 import Sudoku.SudokuBoard.RCM;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.HashMap;
 
 public class SudokuGUI {
-    SudokuBoard board;
-    static final int gridSize = 50;
-    static final int margin = 5;
-    static final int board_tk = 3;
-    static final int mass_tk = 2;
-    static final int panel_tk = 1;
-    int board_bounds;
-    int mass_bounds;
+    SudokuBoard solver;
 
-    JPanel[] num_panels;
+    private HashMap<Integer, NumPanel> panel_map;
+    private Integer selected;
 
     public static void main(String[] args) {
-        (new SudokuGUI()).makeGUI();
+        (new SudokuGUI()).showLauncher();
     }
 
-    void makeGUI() {
+    void showLauncher() {
         JFrame frame = setFrame("Open File", 300, 200);
 
         JPanel panel = new JPanel(new FlowLayout());
         JTextField file_field = new JTextField("data/test6.txt", 20);
         JButton button = new JButton("OPEN");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                board = new SudokuBoard(file_field.getText());
-                if (board.loaded()) {
-                    JOptionPane.showMessageDialog(frame, "Could not open:" + file_field.getText());
-                    return;
-                }
-                board.solveByBacktrack();
-                frame.setVisible(false);
-                showBoard();
-            }
-        });
+        button.addActionListener(launchListener(frame, file_field));
 
         panel.add(file_field);
         panel.add(button);
@@ -59,41 +42,78 @@ public class SudokuGUI {
         frame.setVisible(true);
     }
 
+    private ActionListener launchListener(JFrame frame, JTextField file_field) {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                solver = new SudokuBoard(file_field.getText());
+                if (!solver.loaded()) {
+                    JOptionPane.showMessageDialog(frame, "Could not open:" + file_field.getText());
+                    return;
+                }
+                frame.setVisible(false);
+                showBoard();
+            }
+        };
+    }
+
+    private KeyListener ctrlKeyListener(JPanel frame_panel) {
+        return new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (!solver.list.isEmpty() || solver.checkOnly()) {
+                    selected = solver.list.pollFirst();
+                    solver.setUsed(selected);
+                    RCM.List().parallelStream().forEach(rcm -> solver.getGroup(solver.getLine(selected, rcm), rcm)
+                            .parallelStream().forEach(i -> panel_map.get(i).bg = new Color(200, 200, 255)));
+                    panel_map.get(selected).bg = Color.blue;
+                    panel_map.keySet().forEach(p -> panel_map.get(p).rewrite());
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+
+        };
+    }
+
     void showBoard() {
-        JFrame frame = setFrame("Sudoku", board.psize * gridSize * 3 / 2, board.psize * gridSize + 100);
+        int width = solver.psize * SizedPanel.gridSize * 3 / 2;
+        int height = solver.psize * SizedPanel.gridSize + 100;
+        JFrame frame = setFrame("Sudoku", width, height);
+        panel_map = new HashMap<>();
+        
         JPanel frame_panel = new JPanel(new FlowLayout());
-        num_panels = new JPanel[board.psize * board.psize];
-        mass_bounds = board.msize * gridSize + mass_tk * 2;
-        board_bounds = board.msize * mass_bounds + board_tk * 2;
+        setBoardPanel(frame_panel);
 
-        JPanel board_panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        board_panel.setPreferredSize(new Dimension(board_bounds, board_bounds));
-        board_panel.setBorder(new LineBorder(Color.black, board_tk));
-
-        for (int line = 0; line < board.psize; line++)
-            setMassPanels(board_panel, line);
-
-        frame_panel.add(board_panel);
         frame.add(frame_panel);
         frame.setVisible(true);
+        frame.addKeyListener(ctrlKeyListener(frame_panel));
+    }
+
+    private void setBoardPanel(JPanel frame_panel) {
+        JPanel board_panel = new SizedPanel(SIZE.board, solver);
+        solver.psizeIndex().forEach(line -> setMassPanels(board_panel, line));
+        frame_panel.add(board_panel);
     }
 
     private void setMassPanels(JPanel board_panel, int line) {
-        JPanel mass_panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        mass_panel.setPreferredSize(new Dimension(mass_bounds, mass_bounds));
-        mass_panel.setBorder(new LineBorder(Color.black, mass_tk));
-
-        for (Integer index : board.getGroup(line, RCM.MASS)) {
-            JPanel num_panel = new JPanel();
-            JLabel num_label = new JLabel("" + board.panels.get(index).ans);
-            num_panel.add(num_label);
-            num_panel.setPreferredSize(new Dimension(gridSize, gridSize));
-            num_panel.setBorder(new LineBorder(Color.black, panel_tk));
-
-            num_panels[index] = num_panel;
-            mass_panel.add(num_panel);
-        }
+        JPanel mass_panel = new SizedPanel(SIZE.mass, solver);
+        solver.getGroup(line, RCM.MASS).forEach(index -> setPanel(mass_panel, index));
         board_panel.add(mass_panel);
+    }
+
+    private void setPanel(JPanel mass_panel, Integer index) {
+        NumPanel num_panel = new NumPanel(index, solver);
+        panel_map.put(index, num_panel);
+        num_panel.rewrite();
+        mass_panel.add(num_panel);
     }
 
     private static JFrame setFrame(String title, int width, int height) {

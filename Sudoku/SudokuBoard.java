@@ -111,11 +111,11 @@ public class SudokuBoard {
             psizeIndex.add(num);
     }
 
-    private LinkedList<Integer> psizeIndex() {
+    LinkedList<Integer> psizeIndex() {
         return new LinkedList<>(psizeIndex);
     }
 
-    private LinkedList<Integer> numList() {
+    LinkedList<Integer> numList() {
         return new LinkedList<>(psizeIndex().stream().map(num -> num + 1).collect(Collectors.toList()));
     }
 
@@ -139,7 +139,7 @@ public class SudokuBoard {
                                         .anyMatch(p -> panels.get(p).getAns() == num))));
     }
 
-    private void setUsed(int index) {
+    void setUsed(int index) {
         RCM.List().forEach(rcm -> getGroup(getLine(index, rcm), rcm)
                 .forEach(member -> setUsed(panels.get(index).getAns(), member)));
     }
@@ -149,7 +149,7 @@ public class SudokuBoard {
         return (!panels.get(member).getUsed(0) && panels.get(member).setUsed(num) && list.add(member));
     }
 
-    private boolean checkOnly() {
+    boolean checkOnly() {
         // Scanning number which can use only one panel at the group
         return psizeIndex().stream().anyMatch(scan -> RCM.List().stream()
                 .anyMatch(rcm -> removedNum(

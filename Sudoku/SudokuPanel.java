@@ -1,7 +1,7 @@
 package Sudoku;
 
 public class SudokuPanel {
-	int ans = 0;
+	private int ans = 0;
 	int psize;
 	int count;
 	boolean[] used;
@@ -12,11 +12,11 @@ public class SudokuPanel {
 		count = psize;
 	}
 
-	SudokuPanel(int ans,int psize,int count,boolean[] used){
-		this.ans=ans;
-		this.psize=psize;
-		this.count=count;
-		this.used=used;
+	SudokuPanel(int ans, int psize, int count, boolean[] used) {
+		this.ans = ans;
+		this.psize = psize;
+		this.count = count;
+		this.used = used;
 	}
 
 	@Override
@@ -25,14 +25,14 @@ public class SudokuPanel {
 	}
 
 	boolean getUsed(int n) {
-		return used[n] || ans!=0;
+		return used[n] || ans != 0;
 	}
 
-	boolean ifUsed(int n){
+	boolean ifUsed(int n) {
 		return used[n];
 	}
 
-	boolean[] getUsed(){
+	boolean[] getUsed() {
 		return used.clone();
 	}
 
@@ -41,17 +41,16 @@ public class SudokuPanel {
 			count--;
 			used[n] = true;
 		}
-		if (count == 1) {
-			int num = 0;
-			for (int i = 1; i <= psize; i++) {
-				if (!used[i]) {
-					num = i;
-					break;
-				}
-			}
-			setAns(num);
-		}
+		if (count == 1)
+			setAns(lonelyFinder());
 		return count == 1;
+	}
+
+	private int lonelyFinder() {
+		for (int i = 1; i <= psize; i++)
+			if (!used[i])
+				return i;
+		return -1;
 	}
 
 	void setAns(int ans) {
@@ -62,7 +61,7 @@ public class SudokuPanel {
 		return ans;
 	}
 
-	int getCount(){
+	int getCount() {
 		return count;
 	}
 
